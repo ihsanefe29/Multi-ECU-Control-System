@@ -1,0 +1,85 @@
+ECU CONTROL INTERFACE - REQUIREMENTS
+=====================================
+
+1. OVERVIEW
+-----------
+- A Qt desktop application acting as a control interface for ECUs
+  (Engine Control Units).
+- Main screen divided into 4 sections, one per module:
+    - ECU A - Module 1
+    - ECU A - Module 2
+    - ECU B - Module 1
+    - ECU B - Module 2
+
+2. PER-MODULE CONTROLS
+-----------------------
+Each of the 4 modules needs:
+    - A power control
+    - A mode-selection control
+    - A connect / disconnect control
+
+Two selectable modes per module:
+    - Firmware upload ("yazilim yukleme")
+    - Data view ("veri goruntuleme")
+
+3. POWER SWITCH (ON / OFF / KILL)
+-----------------------------------
+- A 3-position power switch per module: ON / OFF / KILL.
+- Transition rule: every transition is allowed EXCEPT going directly
+  from KILL back to ON (must pass through OFF first).
+
+4. BUILD SYSTEM / TARGET ENVIRONMENT
+--------------------------------------
+- Implementation language/framework: C++ with Qt.
+- Build system: qmake (not CMake).
+- Target Qt version: Qt 5.15 (MinGW 8.1.0, 64-bit was the original
+  target environment).
+- UI layer implemented in QML (not plain Qt Widgets).
+
+5. COMMUNICATION PROTOCOL
+----------------------------
+- CAN FD for the physical/transport layer.
+- CCP (CAN Calibration Protocol) for the application layer -
+  calibration/measurement access with seed-key security handshake.
+- Note: CCP + CAN FD is a non-standard pairing (CCP was designed for
+  classic 8-byte CAN frames; XCP is the standard FD-aware successor).
+  Confirmed as an intentional choice despite this.
+- ECU calibration access needs to be controlled (access-control /
+  security-access flow).
+
+6. ARCHITECTURE
+------------------
+- QML UI layer talks to the C++ backend through a "UI Connector" /
+  Dispatcher object, using Q_PROPERTY bindings.
+- QML sends only high-level, semantic requests (e.g. "connect this
+  ECU module", "switch to this mode") - it must not need to know
+  protocol details, CAN IDs, or threading.
+- The Dispatcher pattern was specifically requested (preferred by a
+  colleague, "Furkan bey") because it keeps the whole request/response
+  flow visible in one place.
+- One dedicated thread per ECU, alive for the whole application
+  lifetime.
+- Communication from the main/GUI thread to the per-ECU worker
+  threads happens via Qt signals.
+- Open design question (left to implementation judgment): whether
+  each ECU should have its own CAN connector or share a single one,
+  and whether an emulated CAN bus should deliver messages via signals
+  or via polling.
+
+7. UI INDICATORS
+-------------------
+- LED-style status indicator widget, with states:
+    - inactive (gray)
+    - success (green)
+    - fail (red)
+    - pending / waiting (blue or orange)
+- A vertical RPM gauge, implemented simply as a text label showing
+  the value (not a graphical dial).
+
+8. OUT OF SCOPE / REMOVED
+----------------------------
+- A mock-accelerometer data pipeline (file loading, FFT/windowing,
+  and a waterfall chart - both a 2D canvas version and a 3D Qt Quick
+  3D version were built at different points) was implemented and then
+  explicitly removed at the user's request. The application currently
+  does not include any signal-processing or waterfall-chart feature.
