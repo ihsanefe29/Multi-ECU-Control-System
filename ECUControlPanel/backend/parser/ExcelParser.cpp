@@ -28,17 +28,20 @@ bool ExcelParser::loadFile(const QString &filePath)
         QVariant addressValue =
             document.read(row, 1);
 
-        QVariant widthValue =
+        QVariant offsetValue =
             document.read(row, 2);
 
-        QVariant typeValue =
+        QVariant widthValue =
             document.read(row, 3);
 
-        QVariant nameValue =
+        QVariant typeValue =
             document.read(row, 4);
 
-        QVariant formulaValue =
+        QVariant nameValue =
             document.read(row, 5);
+
+        QVariant formulaValue =
+            document.read(row, 6);
 
         // RAM Address hücresi boşsa
         // Excel'deki parametrelerin sonuna gelmişiz demektir.
@@ -52,6 +55,9 @@ bool ExcelParser::loadFile(const QString &filePath)
 
         parameter.ramAddress =
             addressValue.toInt();
+
+        parameter.dataOffset =
+            offsetValue.toInt();
 
         parameter.dataWidth =
             widthValue.toInt();
@@ -69,14 +75,11 @@ bool ExcelParser::loadFile(const QString &filePath)
 
         qDebug() << "Parameter:"
                  << parameter.parameterName
-                 << "| Address:"
-                 << parameter.ramAddress
-                 << "| Width:"
-                 << parameter.dataWidth
-                 << "| Type:"
-                 << parameter.dataType
-                 << "| Formula:"
-                 << parameter.conversionFormula;
+                 << "| Address:" << parameter.ramAddress
+                 << "| Offset:" << parameter.dataOffset
+                 << "| Width:" << parameter.dataWidth
+                 << "| Type:" << parameter.dataType
+                 << "| Formula:" << parameter.conversionFormula;
     }
 
     qDebug() << "Total parameters:"

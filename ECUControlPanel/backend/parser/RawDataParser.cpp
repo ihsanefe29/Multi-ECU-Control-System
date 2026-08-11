@@ -160,10 +160,6 @@ QVariant RawDataParser::applyConversion(
 
     // --------------------------------------------------------
     // BİRİM BİLGİSİNİ KALDIR
-    //
-    // x * 0.001 (V)
-    //       ↓
-    // x * 0.001
     // --------------------------------------------------------
 
     int unitStart =
@@ -176,6 +172,20 @@ QVariant RawDataParser::applyConversion(
     }
 
 
+    // --------------------------------------------------------
+    // DIRECT VALUE
+    //
+    // Örnek:
+    // x
+    // x (ms)
+    // x (V)
+    // x (A)
+    // --------------------------------------------------------
+
+    if (expression == "x")
+    {
+        return x;
+    }
     // --------------------------------------------------------
     // x * katsayı
     //
@@ -283,14 +293,14 @@ void RawDataParser::parse(
 
     for (const Parameter &parameter : parameters)
     {
-        int startAddress =
-            parameter.ramAddress;
+        const int startAddress =
+            parameter.ramAddress +
+            parameter.dataOffset;
 
-        int dataWidth =
+        const int dataWidth =
             parameter.dataWidth;
 
-
-        int endAddress =
+        const int endAddress =
             startAddress +
             dataWidth -
             1;
@@ -374,6 +384,9 @@ QVariantMap RawDataParser::parameterInfo(
         {
             info["address"] =
                 parameter.ramAddress;
+
+            info["offset"] =
+                parameter.dataOffset;
 
             info["width"] =
                 parameter.dataWidth;
