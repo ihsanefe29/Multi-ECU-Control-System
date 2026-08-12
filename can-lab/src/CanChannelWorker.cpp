@@ -76,6 +76,12 @@ void CanChannelWorker::sendFrame(quint32 id, bool isFd, QByteArray payload)
         emit errorOccurred(m_channel, QStringLiteral("CAN device is not connected"));
         return;
     }
+
+    if (payload.isEmpty()) {
+        emit errorOccurred(m_channel, QStringLiteral("Payload cannot be empty"));
+        return;
+    }
+    
     if (payload.size() > limit) {
         emit errorOccurred(m_channel, QStringLiteral("payload exceeds %1 bytes").arg(limit));
         return;

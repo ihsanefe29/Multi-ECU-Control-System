@@ -49,8 +49,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(&core, &CommunicationCore::ecuOnlineChanged,
                      [](char ecu, bool online) {
-        qInfo() << "ECU" << ecu
-                << (online ? "ONLINE" : "OFFLINE (heartbeat timeout)");
+        qInfo() << "ECU" << ecu << (online ? "ONLINE" : "OFFLINE (heartbeat timeout)");
     });
 
     QObject::connect(&core, &CommunicationCore::ecuHeartbeat,
@@ -81,9 +80,9 @@ int main(int argc, char *argv[])
     });
 
     QObject::connect(&core, &CommunicationCore::commandSent,
-                     [](char ecu, quint8 command) {
+                     [](char ecu, EcuCommand command) {
         qInfo() << "TX command ECU" << ecu
-                << "value" << Qt::hex << command << Qt::dec;
+                << "value" << Qt::hex << static_cast<int>(command) << Qt::dec;
     });
 /*
     QObject::connect(&core, &CommunicationCore::frameReceived,

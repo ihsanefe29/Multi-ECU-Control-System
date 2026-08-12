@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CanFrame.h"
+#include "EcuCommands.h"
 
 #include <QHash>
 #include <QElapsedTimer>
@@ -23,7 +24,7 @@ public:
 public slots:
     void start();
     void stop();
-    void sendToEcu(char ecu, QByteArray payload, bool isFd = false);
+    //void sendToEcu(char ecu, QByteArray payload);
     void powerOn(char ecu);
     void powerOff(char ecu);
     void requestStatus(char ecu);
@@ -37,7 +38,7 @@ signals:
     void ecuHeartbeat(char ecu, quint8 counter, quint8 powerState);
     void ecuOnlineChanged(char ecu, bool online);
     void ecuStatus(char ecu, quint8 powerState, quint8 result);
-    void commandSent(char ecu, quint8 command);
+    void commandSent(char ecu, EcuCommand command);
     void frameReceived(CanFrame frame);
     void errorOccurred(QString description);
 
@@ -53,6 +54,7 @@ private:
         quint32 commandId = 0;
         quint32 statusId = 0;
         quint32 heartbeatId = 0;
+        bool isFd = false;
     };
     struct ChannelContext {
         QThread *thread = nullptr;
@@ -63,7 +65,7 @@ private:
     void broadcastEcuDiscovery(const QString &channel = {});
     void scheduleDiscoveryCompleted();
     void sendOnChannel(const QString &channel, quint32 id, bool isFd, const QByteArray &payload);
-    void sendCommand(char ecu, quint8 command);
+    void sendCommand(char ecu, EcuCommand command);
 
     QString m_plugin;
     QHash<QString, ChannelContext> m_channels;
