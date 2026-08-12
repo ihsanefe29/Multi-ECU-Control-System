@@ -1,0 +1,427 @@
+# ============================================================
+# TEI-app .gitignore
+# ============================================================
+
+
+# ============================================================
+# C / C++ BUILD ARTIFACTS
+# ============================================================
+
+*.o
+*.obj
+*.lo
+
+*.a
+*.la
+*.lib
+
+*.so
+*.so.*
+*.dll
+*.dylib
+
+*.exe
+*.out
+
+*.d
+*.dep
+
+
+# ============================================================
+# CMAKE
+# ============================================================
+
+build/
+build-*/
+Build/
+BUILD/
+
+/Singleton_Updated/ecu-control/build/
+
+cmake-build-*/
+out/
+
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+compile_commands.json
+
+Makefile
+
+
+# ============================================================
+# NINJA
+# ============================================================
+
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
+
+
+# ============================================================
+# QT
+# ============================================================
+
+*_autogen/
+*_autogen_timestamp_deps
+
+moc_*.cpp
+moc_*.h
+
+qrc_*.cpp
+ui_*.h
+
+*.qmlc
+*.jsc
+
+.qmlcache/
+
+CMakeLists.txt.user
+CMakeLists.txt.user.*
+
+*.pro.user
+*.pro.user.*
+
+*.qtc_clangd/
+
+
+# ============================================================
+# STM32 / ARM FIRMWARE BUILD OUTPUT
+# ============================================================
+
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+
+*.axf
+*.srec
+*.ihex
+
+*.su
+*.cyclo
+
+Debug/
+Release/
+RelWithDebInfo/
+MinSizeRel/
+
+
+# ============================================================
+# PYTHON
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.pyd
+*.pyo
+*.pyc
+
+.python-version
+
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# NOTE:
+# virtual-env/ is intentionally NOT ignored.
+# It is part of the TEI project and contains our
+# Python/Renode/vcan simulation source files.
+
+
+# Python packaging
+dist/
+sdist/
+wheels/
+
+*.egg
+*.egg-info/
+.eggs/
+
+pip-wheel-metadata/
+
+
+# ============================================================
+# PYTHON TESTING
+# ============================================================
+
+.pytest_cache/
+
+.coverage
+.coverage.*
+
+htmlcov/
+
+.tox/
+.nox/
+
+coverage.xml
+
+*.cover
+*.py.cover
+
+hypothesis/
+
+
+# ============================================================
+# PYTHON TYPE CHECKERS / LINTERS
+# ============================================================
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+.pyre/
+.pytype/
+
+.ruff_cache/
+
+
+# ============================================================
+# RENODE
+# ============================================================
+
+# Renode scripts (.resc) and platform descriptions (.repl)
+# MUST remain tracked.
+
+renode.log
+renode-*.log
+
+*.trace
+
+simulation-output/
+renode-output/
+
+
+# ============================================================
+# CAN / VCAN GENERATED OUTPUT
+# ============================================================
+
+candump-*.log
+canlog-*.log
+
+*.candump
+
+can-output/
+can-logs/
+
+
+# ============================================================
+# TEST GENERATED OUTPUT
+# ============================================================
+
+Testing/
+
+test-results/
+test-output/
+
+coverage/
+
+junit.xml
+junit-*.xml
+
+
+# ============================================================
+# LOG FILES
+# ============================================================
+
+*.log
+
+logs/
+
+
+# ============================================================
+# TEMPORARY FILES
+# ============================================================
+
+*.tmp
+*.temp
+
+*.bak
+*.backup
+
+*.swp
+*.swo
+
+*~
+
+.cache/
+tmp/
+temp/
+
+
+# ============================================================
+# ENVIRONMENT / SECRETS
+# ============================================================
+
+.env
+.env.*
+
+!.env.example
+
+*.pem
+*.key
+
+secrets/
+credentials/
+
+
+# ============================================================
+# VS CODE
+# ============================================================
+
+.vscode/*
+
+# Keep shared project configuration if we add these later
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+
+# ============================================================
+# CLION / INTELLIJ
+# ============================================================
+
+.idea/
+
+*.iml
+
+
+# ============================================================
+# VISUAL STUDIO
+# ============================================================
+
+.vs/
+
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+ipch/
+
+*.VC.db
+*.VC.VC.opendb
+
+
+# ============================================================
+# WINDOWS
+# ============================================================
+
+Thumbs.db
+Thumbs.db:encryptable
+
+ehthumbs.db
+ehthumbs_vista.db
+
+Desktop.ini
+
+$RECYCLE.BIN/
+
+*.lnk
+
+
+# ============================================================
+# macOS
+# ============================================================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+._*
+
+
+# ============================================================
+# LINUX
+# ============================================================
+
+.directory
+
+.Trash-*
+
+.nfs*
+
+
+# ============================================================
+# WSL
+# ============================================================
+
+# WSL/Linux generated editor and temporary files
+*.Zone.Identifier
+
+
+# ============================================================
+# ARCHIVES / GENERATED PACKAGES
+# ============================================================
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+
+# ============================================================
+# CRASH / CORE DUMPS
+# ============================================================
+
+core
+core.*
+
+*.core
+*.dmp
+
+
+# ============================================================
+# PROJECT-SPECIFIC GENERATED DIRECTORIES
+# ============================================================
+
+frontend/build/
+backend/build/
+can-lab/build/
+
+virtual-env/firmware/**/build/
+
+tests/output/
+tests/results/
+
+
+# ============================================================
+# IMPORTANT PROJECT FILES THAT SHOULD BE TRACKED
+# ============================================================
+
+# Do NOT ignore:
+#
+# frontend/
+# backend/
+# can-lab/
+# virtual-env/
+#
+# *.cpp
+# *.h
+# *.hpp
+# *.c
+# *.py
+# *.sh
+# *.resc
+# *.repl
+# *.json
+# *.yaml
+# *.yml
+# CMakeLists.txt
+#
+# These are source/configuration files and belong in Git.
+# ============================================================
