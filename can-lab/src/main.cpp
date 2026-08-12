@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
         if (heartbeatPrinting &&
             (heartbeatFilters.isEmpty() || heartbeatFilters.contains(ecu)) &&
-            counter % 10 == 0) {
+            counter % 10 == 0) { // counter prints in tens: 10 20 30
 
             qInfo() << "Heartbeat ECU" << ecu
                     << "counter:" << counter

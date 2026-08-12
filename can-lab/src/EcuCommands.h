@@ -6,17 +6,20 @@ enum class EcuCommand : quint8
 {
     PowerOn       = 0x01,
     PowerOff      = 0x02,
-    RequestStatus = 0x03
+    RequestStatus = 0x05,
 };
 
-inline bool isValidCommand(EcuCommand command)
+enum class DiscoveryMessage : quint8
 {
-    switch (command) {
-    case EcuCommand::PowerOn:
-    case EcuCommand::PowerOff:
-    case EcuCommand::RequestStatus:
-        return true;
-    }
+    Request  = 0xD1,
+    Response = 0xD2
+};
 
-    return false;
+namespace CanProtocol
+{
+    constexpr quint32 DiscoveryRequestId       = 0x7A0;
+    constexpr quint32 DiscoveryResponseFirstId = 0x7A1;
+    constexpr quint32 DiscoveryResponseLastId  = 0x7AF;
+
+    constexpr qint64 HeartbeatTimeoutMs = 500;
 }
