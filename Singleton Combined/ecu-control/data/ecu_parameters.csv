@@ -1,0 +1,39 @@
+RAM Address,Data Offset,Data Width (Byte),Data Type,Parameter Name,Conversion Formula
+0,0,2,Unsigned,RPM,x * 0.1
+2,0,2,Signed,Temperature,-
+4,2,2,Unsigned,Voltage,x * 0.01
+8,0,1,Unsigned,Status,-
+9,0,1,Unsigned,Counter,-
+10,1,2,Unsigned,Current,x * 0.01 (A)
+14,0,4,Float,Power,x * 0.1 (W)
+18,0,2,Unsigned,Bus Voltage,x * 0.1 (V)
+20,1,2,Signed,Phase A Current,x * 0.01 (A)
+24,0,2,Signed,Phase B Current,x * 0.01 (A)
+26,0,2,Signed,Phase C Current,x * 0.01 (A)
+28,2,2,Signed,Motor Temp,x * 0.1 (°C)
+32,0,2,Signed,Inverter Temp,x * 0.1 (°C)
+34,0,2,Signed,Battery Max Temp,x * 0.1 (°C)
+36,1,2,Signed,Ambient Temp,x * 0.1 (°C)
+40,0,2,Signed,PCB Temp,x * 0.1 (°C)
+42,2,2,Unsigned,Target RPM,-
+46,0,4,Float,Acceleration,x * 0.01 (m/s²)
+50,2,2,Unsigned,Torque Demand,x * 0.1 (Nm)
+54,0,4,Float,Actual Torque,x * 0.01 (Nm)
+58,2,2,Unsigned,Encoder Position,-
+62,0,2,Unsigned,Fault Flags,Bitmask
+64,0,2,Unsigned,Warning Flags,Bitmask
+66,1,1,Unsigned,Error Counter,-
+68,0,4,Unsigned,System Uptime,x (ms)
+72,0,1,Unsigned,Operating Mode,Enum
+73,0,1,Unsigned,State Machine State,Enum
+74,1,2,Unsigned,Heartbeat,-
+78,0,4,Unsigned,Firmware Version,Major.Minor.Patch
+82,0,2,Unsigned,Hardware Rev,-
+84,2,2,Unsigned,State of Charge (SOC),x * 0.1 (%)
+88,0,2,Unsigned,State of Health (SOH),x * 0.1 (%)
+90,0,2,Unsigned,Cell 1 Voltage,x * 0.001 (V)
+92,0,2,Unsigned,Cell 2 Voltage,x * 0.001 (V)
+94,0,2,Unsigned,Cell 3 Voltage,x * 0.001 (V)
+96,0,2,Unsigned,Cell 4 Voltage,x * 0.001 (V)
+98,0,2,Unsigned,CRC / Checksum,Hex
+96,4,4,Unsigned,Reserved / Buffer,-
