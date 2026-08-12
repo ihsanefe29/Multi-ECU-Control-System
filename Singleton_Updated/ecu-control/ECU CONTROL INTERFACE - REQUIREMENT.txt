@@ -1,0 +1,149 @@
+ECU CONTROL INTERFACE - REQUIREMENTS & STATUS
+=================================================
+(Living document - updated as work continues. Last updated after
+adding the Firmware Upload staging feature.)
+
+1. OVERVIEW
+-----------
+- A Qt desktop application acting as a control interface for ECUs
+  (Engine Control Units).
+- Main screen divided into 4 sections, one per module:
+    - ECU A - Module 1
+    - ECU A - Module 2
+    - ECU B - Module 1
+    - ECU B - Module 2
+
+2. PER-MODULE CONTROLS
+-----------------------
+Each of the 4 modules has:
+    - A power control (see section 3)
+    - A mode-selection control
+    - A connect / disconnect control
+    - A firmware status line (see section 7)
+
+Two selectable modes per module:
+    - Firmware upload ("yazilim yukleme") - opens the Firmware
+      Upload screen for that specific module
+    - Data view ("veri goruntuleme") - opens the shared Signal
+      Display screen (not module-specific)
+
+3. POWER SWITCH (ON / OFF / KILL)
+-----------------------------------
+- A 3-position power switch per module: ON / OFF / KILL.
+- Transition rule: every transition is allowed EXCEPT going directly
+  from KILL back to ON (must pass through OFF first).
+- STATUS: implemented and working.
+
+4. BUILD SYSTEM / TARGET ENVIRONMENT
+--------------------------------------
+- C++ with Qt, qmake build system (not CMake).
+- Target: Desktop Qt 5.15.0, MinGW 8.1.0, 64-bit.
+- UI layer implemented in QML (not plain Qt Widgets).
+- STATUS: implemented, confirmed building and running on the real
+  target kit.
+
+5. COMMUNICATION PROTOCOL
+----------------------------
+- CAN FD for the physical/transport layer.
+- CCP (CAN Calibration Protocol) for the application layer -
+  calibration/measurement access with seed-key security handshake.
+- Note: CCP + CAN FD is a non-standard pairing (CCP was designed for
+  classic 8-byte CAN frames; XCP is the standard FD-aware successor).
+  This is an intentional choice, not an oversight.
+- STATUS: a mock CAN FD bus (signal-based, not polling) and the CCP
+  CONNECT / GET_SEED / UNLOCK / DISCONNECT command sequence are
+  implemented and used by the connect/disconnect flow. CCP DNLOAD
+  (the command that actually writes data to the ECU) is NOT yet
+  wired to anything - see section 7.
+
+6. ARCHITECTURE
+------------------
+- QML UI layer talks to the C++ backend through a single Dispatcher
+  ("UI Connector") object, using Q_PROPERTY bindings and Q_INVOKABLE
+  methods. QML sends only high-level, semantic requests (e.g.
+  "connect this ECU module", "switch to this mode") - it never
+  touches CCP frames, CAN IDs, or threads.
+- One dedicated thread per ECU (ECU A's thread, ECU B's thread),
+  alive for the whole application lifetime. Each thread runs the
+  ModuleWorker objects for that ECU's 2 modules.
+- A lightweight ModuleSession object per module lives on the GUI
+  thread (where QML can safely bind to it); it's bridged to its
+  ModuleWorker via Qt's signal/slot mechanism, which auto-queues
+  across threads.
+- SignalFileLoader and LiveSignalSource (Signal Display's two data
+  sources) are owned by Dispatcher and exposed as
+  dispatcher.signalLoader / dispatcher.liveSource, rather than
+  separate top-level QML context properties - every QML-visible
+  object is now reachable through the one Dispatcher entry point.
+- CCP operations (connect/get-seed/unlock/disconnect) have a timeout:
+  if no response arrives within 3 seconds, the operation fails out
+  cleanly instead of leaving the module stuck showing "pending"
+  forever.
+- Firmware staging requires the target module to already be
+  connected - Dispatcher.selectFirmware() refuses otherwise (returns
+  false, emits firmwareRejected with a reason).
+- STATUS: implemented as described above.
+
+7. FIRMWARE UPLOAD (per-module screen)
+-----------------------------------------
+- Switching a specific module's mode to "Yazilim Yukleme" opens a
+  screen scoped to that module (unlike Signal Display, which is
+  shared across all modules).
+- The user picks a firmware file (.bin/.hex); its name and size are
+  staged in the Dispatcher, associated with that specific module, and
+  shown both on that screen and as a status line on the module's
+  panel.
+- STATUS: file staging works. Actually uploading the staged file to
+  the ECU (a real CCP DNLOAD sequence, sent in chunks over the mock
+  CAN FD bus, through the module's ModuleWorker) is NOT implemented
+  yet - this is the next planned step.
+
+8. SIGNAL DISPLAY (shared screen)
+-------------------------------------
+- Switching any module's mode to "Veri Goruntuleme" opens one shared
+  screen (not tied to a specific module).
+- Two independent data sources, plotted with QtCharts:
+    a) Static file load: reads a [time, amplitude] file (comma or
+       whitespace separated, header row tolerated), computes
+       descriptive parameters (sample count, sample rate - derived
+       from the file's own time column, duration) shown beside the
+       chart, and statistical measurements (min, max, mean, RMS,
+       peak-to-peak) shown below it.
+    b) Live mode: a mock streaming source generates one sample at a
+       time (a slowly drifting-frequency sine wave); the chart shows
+       a rolling 10-second window, and the parameters panel shows the
+       signal's actual generating parameters (frequency, amplitude,
+       sample rate) instead of file metadata. Measurements recompute
+       continuously over the visible window.
+- Starting one mode automatically stops the other.
+- STATUS: implemented and working (after fixing a Windows
+  ANGLE/OpenGL rendering issue and a layout gap).
+
+9. UI INDICATORS
+-------------------
+- LED-style status indicator per module, with states: inactive
+  (gray), success (green), fail (red), pending/waiting (blue or
+  orange).
+- A vertical RPM gauge, implemented as a simple text label (not a
+  graphical dial).
+- STATUS: implemented.
+
+10. KNOWN GAPS / NEXT STEPS
+-------------------------------
+- Real CCP DNLOAD flashing sequence for the Firmware Upload feature
+  (currently only stages the file, doesn't send it).
+- No live measurement data is wired from the actual CCP/CAN FD layer
+  into the Signal Display screen yet - only mock/file sources feed it
+  so far.
+- CAN connector topology (one shared bus vs. one per ECU) was left as
+  an open design question early on; currently implemented as one
+  shared mock bus with per-module CAN ID filtering.
+
+11. REMOVED / OUT OF SCOPE
+-------------------------------
+- An earlier mock-accelerometer pipeline (file loading, FFT/
+  windowing, and a waterfall chart - both a 2D canvas version and a
+  3D Qt Quick 3D version were built) was implemented and then
+  explicitly removed at the user's request. This is unrelated to and
+  predates the current Signal Display feature (section 8), which is
+  a separate, simpler, non-FFT time-domain plot.
