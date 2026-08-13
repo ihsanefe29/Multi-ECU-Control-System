@@ -52,9 +52,18 @@ signals:
 
 private:
 
+    quint64 extractBits(
+        const QByteArray &data,
+        int bitOffset,
+        int bitWidth
+        );
+
+
     QVariant parseValue(
         const QByteArray &data,
-        const QString &dataType
+        const QString &dataType,
+        int bitOffset,
+        int bitWidth
         );
 
 

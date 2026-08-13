@@ -121,8 +121,92 @@ int main(int argc, char *argv[])
         &DataSimulator::dataReady,
         [&](const QByteArray &rawData)
         {
+            // Paket:
+            // [0-1]  Header
+            // [2-11] Payload
+            // [12]   Checksum
+
+            if (rawData.size() < 3)
+            {
+                qDebug()
+                << "Main: Invalid packet size:"
+                << rawData.size();
+
+                return;
+            }
+
+
+            // ----------------------------------------------------
+            // HEADER KONTROLÜ
+            // ----------------------------------------------------
+
+            const quint8 header1 =
+                static_cast<quint8>(
+                    rawData.at(0)
+                    );
+
+            const quint8 header2 =
+                static_cast<quint8>(
+                    rawData.at(1)
+                    );
+
+
+            if (header1 != 0xAA ||
+                header2 != 0x55)
+            {
+                qDebug()
+                << "Main: Invalid header.";
+
+                return;
+            }
+
+
+            // ----------------------------------------------------
+            // CHECKSUM
+            //
+            // Şimdilik checksum algoritmasını bilmiyoruz.
+            // Bu nedenle sadece son byte'ı paketten ayırıyoruz.
+            // ----------------------------------------------------
+
+            const quint8 checksum =
+                static_cast<quint8>(
+                    rawData.at(
+                        rawData.size() - 1
+                        )
+                    );
+
+            Q_UNUSED(checksum);
+
+
+            // ----------------------------------------------------
+            // PAYLOAD
+            //
+            // Header: 2 byte
+            // Checksum: 1 byte
+            //
+            // Geri kalan bölüm Parser'a gider.
+            // ----------------------------------------------------
+
+            const QByteArray payload =
+                rawData.mid(
+                    2,
+                    rawData.size() - 3
+                    );
+
+
+            qDebug()
+                << "Main: Packet size:"
+                << rawData.size()
+                << "| Payload size:"
+                << payload.size();
+
+
+            // ----------------------------------------------------
+            // RAW DATA PARSER
+            // ----------------------------------------------------
+
             rawDataParser.parse(
-                rawData,
+                payload,
                 parameters
                 );
         }

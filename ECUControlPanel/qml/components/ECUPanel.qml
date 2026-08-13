@@ -157,8 +157,10 @@ Rectangle {
                 spacing: 15
 
                 Label {
-                    text: "RPM: " +
-                          rawDataParser.values["RPM"]
+                    text: "N1: " +
+                          (rawDataParser.values["N1"] !== undefined
+                           ? rawDataParser.values["N1"]
+                           : "undefined")
 
                     color: "white"
                     font.pixelSize: 14
@@ -166,8 +168,10 @@ Rectangle {
                 }
 
                 Label {
-                    text: "Voltage: " +
-                          rawDataParser.values["Voltage"]
+                    text: "EGT: " +
+                          (rawDataParser.values["EGT"] !== undefined
+                           ? rawDataParser.values["EGT"]
+                           : "undefined")
 
                     color: "white"
                     font.pixelSize: 14
@@ -175,8 +179,10 @@ Rectangle {
                 }
 
                 Label {
-                    text: "Temp: " +
-                          rawDataParser.values["Temperature"]
+                    text: "Fuel Flow: " +
+                          (rawDataParser.values["Fuel Flow"] !== undefined
+                           ? rawDataParser.values["Fuel Flow"]
+                           : "undefined")
 
                     color: "white"
                     font.pixelSize: 14

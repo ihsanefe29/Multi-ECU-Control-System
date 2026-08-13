@@ -192,23 +192,17 @@ Rectangle {
 
 
                 ComboBox {
-
                     id: parameterCombo
 
                     Layout.preferredWidth: 220
 
-
                     model: [
-                        "RPM",
-                        "Temperature",
-                        "Voltage",
-                        "Current",
-                        "Power",
-                        "Bus Voltage",
-                        "Motor Temp",
-                        "Inverter Temp"
+                        "N1",
+                        "EGT",
+                        "Fuel Flow",
+                        "Bleed Valve Position",
+                        "Vibration"
                     ]
-
 
                     onCurrentTextChanged: {
 

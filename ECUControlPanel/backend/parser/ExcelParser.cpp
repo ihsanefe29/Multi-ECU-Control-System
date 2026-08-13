@@ -28,10 +28,10 @@ bool ExcelParser::loadFile(const QString &filePath)
         QVariant addressValue =
             document.read(row, 1);
 
-        QVariant offsetValue =
+        QVariant widthValue =
             document.read(row, 2);
 
-        QVariant widthValue =
+        QVariant bitOffsetValue =
             document.read(row, 3);
 
         QVariant typeValue =
@@ -56,11 +56,11 @@ bool ExcelParser::loadFile(const QString &filePath)
         parameter.ramAddress =
             addressValue.toInt();
 
-        parameter.dataOffset =
-            offsetValue.toInt();
-
         parameter.dataWidth =
             widthValue.toInt();
+
+        parameter.bitOffset =
+            bitOffsetValue.toInt();
 
         parameter.dataType =
             typeValue.toString();
@@ -76,8 +76,8 @@ bool ExcelParser::loadFile(const QString &filePath)
         qDebug() << "Parameter:"
                  << parameter.parameterName
                  << "| Address:" << parameter.ramAddress
-                 << "| Offset:" << parameter.dataOffset
                  << "| Width:" << parameter.dataWidth
+                 << "| Bit Offset:" << parameter.bitOffset
                  << "| Type:" << parameter.dataType
                  << "| Formula:" << parameter.conversionFormula;
     }

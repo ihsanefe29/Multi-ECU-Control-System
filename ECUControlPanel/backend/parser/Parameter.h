@@ -6,8 +6,8 @@
 struct Parameter
 {
     int ramAddress;
-    int dataOffset;
     int dataWidth;
+    int bitOffset;
 
     QString dataType;
     QString parameterName;
