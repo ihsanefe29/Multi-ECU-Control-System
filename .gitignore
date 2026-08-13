@@ -36,6 +36,9 @@ build-*/
 Build/
 BUILD/
 
+/Singleton_Updated/ecu-control/build/
+/can-lab/build_qmake/
+
 cmake-build-*/
 out/
 

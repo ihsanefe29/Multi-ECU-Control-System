@@ -11,6 +11,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core SerialBus)
 qt_add_executable(QtCanBusService
     src/main.cpp
     src/CanFrame.h
+    src/EcuTelemetry.h
     src/CanChannelWorker.h
     src/CanChannelWorker.cpp
     src/CommunicationCore.h
