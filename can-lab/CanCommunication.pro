@@ -13,4 +13,5 @@ SOURCES += \
 HEADERS += \
     src/CanFrame.h \
     src/CanChannelWorker.h \
-    src/CommunicationCore.h
+    src/CommunicationCore.h \
+    src/EcuTelemetry.h

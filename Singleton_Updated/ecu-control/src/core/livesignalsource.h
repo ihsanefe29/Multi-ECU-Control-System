@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <QElapsedTimer>
 
 // A mock "live" signal source - simulates data arriving in real time
 // (as opposed to SignalFileLoader, which loads a complete file at
@@ -15,20 +16,22 @@ class LiveSignalSource : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool running READ running NOTIFY runningChanged)
-    Q_PROPERTY(double frequencyHz READ frequencyHz NOTIFY paramsChanged)
-    Q_PROPERTY(double amplitude READ amplitude NOTIFY paramsChanged)
-    Q_PROPERTY(double sampleRateHz READ sampleRateHz CONSTANT)
-
+    //Q_PROPERTY(double frequencyHz READ frequencyHz NOTIFY paramsChanged)
+   // Q_PROPERTY(double amplitude READ amplitude NOTIFY paramsChanged)
+    //Q_PROPERTY(double sampleRateHz READ sampleRateHz CONSTANT)
 public:
     explicit LiveSignalSource(QObject *parent = nullptr);
-
-    bool running() const { return m_timer.isActive(); }
-    double frequencyHz() const { return m_frequencyHz; }
-    double amplitude() const { return m_amplitude; }
-    double sampleRateHz() const { return kSampleRateHz; }
+    bool running() const { return m_running; }
+    //bool running() const { return m_timer.isActive(); }
+    //ouble frequencyHz() const { return m_frequencyHz; }
+    //double amplitude() const { return m_amplitude; }
+    //double sampleRateHz() const { return kSampleRateHz; }
 
     Q_INVOKABLE void start();
     Q_INVOKABLE void stop();
+
+    void pushHz(double hz);
+
 
 signals:
     void runningChanged();
@@ -38,7 +41,7 @@ signals:
     void sampleGenerated(double time, double value);
 
 private:
-    void tick();
+    /*void tick();
 
     QTimer m_timer;
     double m_elapsed = 0.0;
@@ -47,4 +50,7 @@ private:
     double m_amplitude = 1.0;
     // Ticks per second - also displayed as the "sample rate" parameter.
     static constexpr double kSampleRateHz = 20.0;
+    */
+   bool m_running = false;
+   QElapsedTimer m_clock;
 };

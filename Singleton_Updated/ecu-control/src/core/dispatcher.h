@@ -1,15 +1,19 @@
 #pragma once
 
 #include <QObject>
-#include <QThread>
+//#include <QThread>
 #include <QMap>
 #include <QUrl>
 #include "modulesession.h"
-#include "moduleworker.h"
-#include "canfdemulator.h"
+//#include "moduleworker.h"
+//#include "canfdemulator.h"
 #include "signalfileloader.h"
 #include "livesignalsource.h"
 #include "rawsignalloader.h"
+#include "CommunicationCore.h"
+#include "EcuTelemetry.h"
+#include <QElapsedTimer>
+#include <QHash>
 
 // The single object QML talks to. QML calls Q_INVOKABLE methods here
 // with only semantic intent (which ECU, which module, what action) -
@@ -42,8 +46,8 @@ class Dispatcher : public QObject
     Q_PROPERTY(RawSignalLoader* rawSignalLoader READ rawSignalLoader CONSTANT)
 
 public:
-    explicit Dispatcher(QObject *parent = nullptr);
-    ~Dispatcher() override;
+    explicit Dispatcher(CommunicationCore *core,QObject *parent = nullptr);
+    //~Dispatcher() override;
 
     ModuleSession *ecuAModule1() const { return m_ecuAModule1; }
     ModuleSession *ecuAModule2() const { return m_ecuAModule2; }
@@ -79,33 +83,43 @@ public:
 signals:
     void firmwareChanged(const QString &ecuId, int moduleNumber);
     void firmwareRejected(const QString &ecuId, int moduleNumber, const QString &reason);
+    void communicationError(const QString &message);
+
+private slots:
+    void onEcuDiscovered(char ecu,const QString &channel,quint32 commandId);
+
+    void onEcuOnlineChanged(char ecu,bool online);
+
+    void onEcuStatus(char ecu,quint8 powerState,quint8 result);
+
+    void onEcuHeartbeat(char ecu,quint8 counter,quint8 state);
+
+    void onTelemetryReceived(EcuTelemetry telemetry);
 
 private:
     ModuleSession *findSession(const QString &ecuId, int moduleNumber) const;
-    void wire(ModuleSession *session, ModuleWorker *worker);
+
     static QString firmwareKey(const QString &ecuId, int moduleNumber);
 
-    QThread m_ecuAThread;
-    QThread m_ecuBThread;
-    CanFdEmulator *m_bus;
+    CommunicationCore *m_core = nullptr;
 
-    ModuleSession *m_ecuAModule1;
-    ModuleSession *m_ecuAModule2;
-    ModuleSession *m_ecuBModule1;
-    ModuleSession *m_ecuBModule2;
+    ModuleSession *m_ecuAModule1 = nullptr;
+    ModuleSession *m_ecuAModule2 = nullptr;
+    ModuleSession *m_ecuBModule1 = nullptr;
+    ModuleSession *m_ecuBModule2 = nullptr;
 
-    ModuleWorker *m_ecuAModule1Worker;
-    ModuleWorker *m_ecuAModule2Worker;
-    ModuleWorker *m_ecuBModule1Worker;
-    ModuleWorker *m_ecuBModule2Worker;
-
-    SignalFileLoader *m_signalLoader;
-    LiveSignalSource *m_liveSource;
-    RawSignalLoader *m_rawSignalLoader;
+    SignalFileLoader *m_signalLoader = nullptr;
+    LiveSignalSource *m_liveSource = nullptr;
+    RawSignalLoader *m_rawSignalLoader = nullptr;
 
     struct FirmwareInfo {
         QString fileName;
         qint64 sizeBytes = 0;
     };
-    QMap<QString, FirmwareInfo> m_firmwareByModule; // key: firmwareKey(ecuId, moduleNumber)
+
+    QMap<QString, FirmwareInfo> m_firmwareByModule;
+
+    QString m_selectedEcu;
+    QElapsedTimer m_telemetryClock;
+    QHash<char, qint64> m_lastTelemetryMs;
 };

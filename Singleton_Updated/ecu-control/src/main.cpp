@@ -4,6 +4,9 @@
 #include <QQmlEngine>
 #include <QQuickStyle>
 #include "core/dispatcher.h"
+#include "CommunicationCore.h"
+#include "CanFrame.h"
+#include "EcuTelemetry.h"
 
 int main(int argc, char *argv[])
 {
@@ -23,11 +26,17 @@ int main(int argc, char *argv[])
     // native dialog (e.g. Windows).
     QApplication app(argc, argv);
 
+        
+    qRegisterMetaType<CanFrame>("CanFrame");
+    qRegisterMetaType<TelemetryValue>("TelemetryValue");
+    qRegisterMetaType<EcuTelemetry>("EcuTelemetry");
+
     // signalLoader and liveSource live inside Dispatcher (as
     // Dispatcher.signalLoader / Dispatcher.liveSource) rather than as
     // separate top-level objects, so every QML-visible object is
     // reachable through the one Dispatcher entry point.
-    Dispatcher dispatcher;
+    CommunicationCore core;
+    Dispatcher dispatcher(&core);
 
     QQmlApplicationEngine engine;
 
@@ -46,6 +55,24 @@ int main(int argc, char *argv[])
 
     if (engine.rootObjects().isEmpty())
         return -1;
+
+    
+
+    QObject::connect(
+        &app,
+        &QCoreApplication::aboutToQuit,
+        &core,
+        &CommunicationCore::stop
+    );
+
+
+    // Start CommunicationCore after Qt event loop initialization.
+    QTimer::singleShot(
+        0,
+        &core,
+        &CommunicationCore::start
+    );
+
 
     return app.exec();
 }

@@ -2,6 +2,7 @@
 
 #include "CanFrame.h"
 #include "EcuCommands.h"
+#include "EcuTelemetry.h"
 
 #include <QHash>
 #include <QElapsedTimer>
@@ -41,6 +42,7 @@ signals:
     void commandSent(char ecu, EcuCommand command);
     void frameReceived(CanFrame frame);
     void errorOccurred(QString description);
+    void telemetryReceived(EcuTelemetry telemetry);
 
 private slots:
     void scanInterfaces();
@@ -49,13 +51,16 @@ private slots:
     void checkHeartbeatTimeouts();
 
 private:
-    struct Route {
-        QString channel;
-        quint32 commandId = 0;
-        quint32 statusId = 0;
-        quint32 heartbeatId = 0;
-        bool isFd = false;
-    };
+        struct Route {
+            QString channel;
+            quint32 commandId = 0;
+            quint32 statusId = 0;
+            quint32 heartbeatId = 0;
+
+            quint32 telemetryId = 0;
+
+            bool isFd = false;
+        };
     struct ChannelContext {
         QThread *thread = nullptr;
         CanChannelWorker *worker = nullptr;

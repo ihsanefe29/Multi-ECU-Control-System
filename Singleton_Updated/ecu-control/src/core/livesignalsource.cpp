@@ -2,16 +2,18 @@
 
 #include <QRandomGenerator>
 #include <cmath>
+#include <QDebug>
 
 LiveSignalSource::LiveSignalSource(QObject *parent)
     : QObject(parent)
 {
-    m_timer.setInterval(int(1000.0 / kSampleRateHz)); // 50ms @ 20Hz
-    connect(&m_timer, &QTimer::timeout, this, &LiveSignalSource::tick);
+    //m_timer.setInterval(int(1000.0 / kSampleRateHz)); // 50ms @ 20Hz
+    //connect(&m_timer, &QTimer::timeout, this, &LiveSignalSource::tick);
 }
 
 void LiveSignalSource::start()
 {
+    /*
     if (m_timer.isActive())
         return;
     m_elapsed = 0.0;
@@ -20,17 +22,52 @@ void LiveSignalSource::start()
     m_timer.start();
     emit runningChanged();
     emit paramsChanged();
+    */
+    if (m_running)
+        return;
+
+    m_running = true;
+    m_clock.start();
+
+    emit runningChanged();
 }
 
 void LiveSignalSource::stop()
 {
-    if (!m_timer.isActive())
+    /*if (!m_timer.isActive())
         return;
     m_timer.stop();
     emit runningChanged();
+    */
+       
+    if (!m_running)
+        return;
+
+    m_running = false;
+
+    emit runningChanged();
 }
 
-void LiveSignalSource::tick()
+void LiveSignalSource::pushHz(double hz)
+{
+    qDebug() << "LiveSignalSource::pushHz called:"
+             << hz
+             << "running:"
+             << m_running;
+
+    if (!m_running)
+        return;
+
+    const double time = static_cast<double>(m_clock.elapsed()) / 1000.0; // ms to second
+
+    qDebug() << "Emitting sampleGenerated:"
+             << time
+             << hz;
+
+    emit sampleGenerated(time, hz);
+}
+
+/*void LiveSignalSource::tick()
 {
     m_elapsed += 1.0 / kSampleRateHz;
 
@@ -51,4 +88,4 @@ void LiveSignalSource::tick()
 
     emit paramsChanged();
     emit sampleGenerated(m_elapsed, value);
-}
+}*/

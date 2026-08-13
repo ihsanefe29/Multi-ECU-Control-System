@@ -145,7 +145,7 @@ void CommunicationCore::processIncomingFrame(CanFrame frame)
 {
     // discovery response check
     if (frame.id >= CanProtocol::DiscoveryResponseFirstId && frame.id <= CanProtocol::DiscoveryResponseLastId &&
-        frame.payload.size() == 8 && quint8(frame.payload[0]) == static_cast<quint8>(DiscoveryMessage::Response)) {
+        frame.payload.size() == 10 && quint8(frame.payload[0]) == static_cast<quint8>(DiscoveryMessage::Response)) {
             
         const char ecu = frame.payload[1]; // extract route info from payload
         Route route;
@@ -159,6 +159,8 @@ void CommunicationCore::processIncomingFrame(CanFrame frame)
                          quint32(quint8(frame.payload[5]));
         route.heartbeatId = (quint32(quint8(frame.payload[6])) << 8) |
                             quint32(quint8(frame.payload[7]));
+        route.telemetryId =(quint16(quint8(frame.payload[8])) << 8) |
+                            quint16(quint8(frame.payload[9]));
 
         const auto existing = m_routes.constFind(ecu); // search throgh m_routes hash map
         if (existing != m_routes.cend() && existing->channel != route.channel) { // if route is already exist in m_routes yet seen in a different channel
@@ -195,6 +197,35 @@ void CommunicationCore::processIncomingFrame(CanFrame frame)
             //recieve status
             if (frame.id == route.statusId && frame.payload.size() >= 2) {
                 emit ecuStatus(ecu, quint8(frame.payload[0]), quint8(frame.payload[1]));
+                return;
+            }
+
+            //revieve telemetry
+            if(frame.id == route.telemetryId && !frame.payload.isEmpty() && frame.payload.size() % 8 == 0 ){
+                EcuTelemetry telemetry;
+                telemetry.ecu = ecu;
+
+                for (int i = 0; i < frame.payload.size(); i+=8)
+                {
+                    TelemetryValue val;
+
+                    val.ramAddress = (quint32(quint8(frame.payload[i]))     << 24) | (quint32(quint8(frame.payload[i + 1])) << 16) |
+                                 (quint32(quint8(frame.payload[i + 2])) << 8)  |    quint32(quint8(frame.payload[i + 3]));
+
+
+
+                    val.rawValue = (quint32(quint8(frame.payload[i + 4])) << 24) | (quint32(quint8(frame.payload[i + 5])) << 16) |
+                               (quint32(quint8(frame.payload[i + 6])) << 8)  | quint32(quint8(frame.payload[i + 7]));
+
+                    telemetry.values.append(val);   
+                }
+                
+                /*qInfo() << "Telemetry ECU:" << ecu;
+
+                /*for (const TelemetryValue &value : telemetry.values) {
+               qInfo() << "RAM:" << value.ramAddress << "RAW:" << value.rawValue;
+                }*/
+                emit telemetryReceived(telemetry);
                 return;
             }
         }
