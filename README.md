@@ -1,4 +1,4 @@
-# TEI ECU Control & CAN FD Communication System
+# Multi ECU Control & CAN FD Communication System
 
 A Qt-based ECU communication, monitoring, and control application designed around CAN/CAN FD.
 
@@ -779,7 +779,7 @@ Qt property notifications therefore keep the GUI synchronized with communication
 
 The repository is organized roughly as:
 
-    TEI-app/
+    Multi-ECU-Control-System/
     │
     ├── can-lab/
     │   └── src/
