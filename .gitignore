@@ -376,12 +376,14 @@ $RECYCLE.BIN/
 # CRASH / CORE DUMPS
 # ============================================================
 
-core
+/core
 core.*
-
 *.core
 *.dmp
 
+# Project source directory
+!ecu-control/src/core/
+!ecu-control/src/core/**
 
 # ============================================================
 # PROJECT-SPECIFIC GENERATED DIRECTORIES

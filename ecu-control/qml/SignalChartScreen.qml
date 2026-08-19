@@ -419,8 +419,8 @@ Item {
     // ============================================================
     FileDialog {
         id: paramFileDialog
-        title: qsTr("Parametre Tanım Dosyası Seç (CSV)")
-        nameFilters: [qsTr("CSV Dosyaları (*.csv)"), qsTr("Tüm Dosyalar (*)")]
+        title: qsTr("Parametre Tanım Dosyası Seç (CSV/Excel)")
+        nameFilters: [qsTr("Desteklenen Dosyalar (*.csv *.xlsx)"), qsTr("CSV Dosyaları (*.csv)"), qsTr("Excel Dosyaları (*.xlsx)"), qsTr("Tüm Dosyalar (*)")]
         onAccepted: {
             if (Dispatcher.rawSignalLoader.loadParameterFile(file)) {
                 root.rawParamsLoaded = true
