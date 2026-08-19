@@ -1,5 +1,0 @@
-{
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/can-lab/build/compile_commands.json",
-    "C_Cpp.default.compilerPath": "/usr/bin/c++",
-    "C_Cpp.intelliSenseEngine": "default"
-}

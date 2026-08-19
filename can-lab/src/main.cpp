@@ -1,6 +1,4 @@
 #include "CommunicationCore.h"
-#include "CommunicationCore.h"
-#include "EcuTelemetry.h"
 #include <QIODevice>
 #include <QCoreApplication>
 #include <QDebug>
@@ -15,8 +13,6 @@ int main(int argc, char *argv[])
 {
     QCoreApplication application(argc, argv);
     qRegisterMetaType<CanFrame>("CanFrame");
-    qRegisterMetaType<TelemetryValue>("TelemetryValue");
-    qRegisterMetaType<EcuTelemetry>("EcuTelemetry");
 
     CommunicationCore core;
 
@@ -53,7 +49,8 @@ int main(int argc, char *argv[])
 
     QObject::connect(&core, &CommunicationCore::ecuOnlineChanged,
                      [](char ecu, bool online) {
-        qInfo() << "ECU" << ecu << (online ? "ONLINE" : "OFFLINE (heartbeat timeout)");
+        qInfo() << "ECU" << ecu
+                << (online ? "ONLINE" : "OFFLINE (heartbeat timeout)");
     });
 
     QObject::connect(&core, &CommunicationCore::ecuHeartbeat,
@@ -62,7 +59,7 @@ int main(int argc, char *argv[])
 
         if (heartbeatPrinting &&
             (heartbeatFilters.isEmpty() || heartbeatFilters.contains(ecu)) &&
-            counter % 10 == 0) { // counter prints in tens: 10 20 30
+            counter % 10 == 0) {
 
             qInfo() << "Heartbeat ECU" << ecu
                     << "counter:" << counter
@@ -84,9 +81,9 @@ int main(int argc, char *argv[])
     });
 
     QObject::connect(&core, &CommunicationCore::commandSent,
-                     [](char ecu, EcuCommand command) {
+                     [](char ecu, quint8 command) {
         qInfo() << "TX command ECU" << ecu
-                << "value" << Qt::hex << static_cast<int>(command) << Qt::dec;
+                << "value" << Qt::hex << command << Qt::dec;
     });
 /*
     QObject::connect(&core, &CommunicationCore::frameReceived,

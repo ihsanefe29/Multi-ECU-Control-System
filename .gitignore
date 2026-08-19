@@ -36,9 +36,6 @@ build-*/
 Build/
 BUILD/
 
-/Singleton_Updated/ecu-control/build/
-/can-lab/build_qmake/
-
 cmake-build-*/
 out/
 
@@ -80,28 +77,14 @@ ui_*.h
 *.jsc
 
 .qmlcache/
-**/.qmlls.ini
 
 CMakeLists.txt.user
 CMakeLists.txt.user.*
 
 *.pro.user
 *.pro.user.*
-*.qbs.user*
 
 *.qtc_clangd/
-
-/.qmake.cache
-/.qmake.stash
-/.qtcreator/
-
-*.qm
-
-# Qt Creator misc generated files
-*_pch.h.cpp
-*_resource.rc
-*.prl
-*.app
 
 
 # ============================================================
@@ -267,12 +250,8 @@ logs/
 
 *.swp
 *.swo
-.*.swp
 
 *~
-*.orig
-*.rej
-*.debug
 
 .cache/
 tmp/
@@ -301,6 +280,7 @@ credentials/
 
 .vscode/*
 
+# Keep shared project configuration if we add these later
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -332,19 +312,6 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 
-*.ib_pdb_index
-*.idb
-*.ilk
-*.pdb
-*.sln
-*.vcproj
-*vcproj.*.*.user
-*.ncb
-*.sdf
-*.opensdf
-*.vcxproj
-*vcxproj.*
-
 
 # ============================================================
 # WINDOWS
@@ -361,9 +328,6 @@ Desktop.ini
 $RECYCLE.BIN/
 
 *.lnk
-
-*.res
-*.rc
 
 
 # ============================================================
@@ -392,6 +356,7 @@ $RECYCLE.BIN/
 # WSL
 # ============================================================
 
+# WSL/Linux generated editor and temporary files
 *.Zone.Identifier
 
 
@@ -413,19 +378,9 @@ $RECYCLE.BIN/
 
 core
 core.*
-!core/
 
 *.core
 *.dmp
-
-
-# ============================================================
-# MISC EDITOR
-# ============================================================
-
-.#*
-*.*#
-tags
 
 
 # ============================================================
