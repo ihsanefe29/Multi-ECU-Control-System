@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 set -euo pipefail
 
 echo "========== CAN Interface Manager =========="
@@ -116,7 +116,7 @@ while true; do
                 ip link set "$iface" down 2>/dev/null || true
 
                 if ip link del dev "$iface"; then
-                    echo "✓ $iface deleted"
+                    echo "Ô£ô $iface deleted"
                 else
                     echo "Failed to delete $iface"
                 fi

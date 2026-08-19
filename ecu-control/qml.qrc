@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/Main.qml</file>
+        <file>qml/EcuPanel.qml</file>
+        <file>qml/SignalChartScreen.qml</file>
+        <file>qml/FirmwareUploadScreen.qml</file>
+        <file>qml/ParameterPage.qml</file>
+        <file>qml/components/LedIndicator.qml</file>
+        <file>qml/components/RpmGauge.qml</file>
+        <file>qml/components/PowerSwitchItem.qml</file>
+        <file>qml/components/ThreeStateSwitch.qml</file>
+        <file>qml/components/SystemLog.qml</file>
+        <file>qml/components/DataVisualization.qml</file>
+        <file>qml/components/StatusLed.qml</file>
+        <file>qml/components/Header.qml</file>
+    </qresource>
+</RCC>
