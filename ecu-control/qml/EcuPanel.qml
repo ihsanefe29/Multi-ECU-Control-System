@@ -4,63 +4,74 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "components"
 
-// One panel = one ModuleSession. `session` is one of
-// Dispatcher.ecuAModule1 / ecuAModule2 / ecuBModule1 / ecuBModule2.
-//
-// Every user action here goes back through `Dispatcher`, never
-// touches `session`'s slots directly - keeps QML's only contact
-// point with the backend at the Dispatcher, matching the "UI
-// Connector is a mediator" requirement.
 Rectangle {
     id: root
-    property var session
-    property string displayTitle: session ? ("ECU " + session.ecuId + " — Modül " + session.moduleNumber) : ""
+    property var    session
+    property string accentColor: "#3b82f6"
+    property string displayTitle: session
+        ? ("ECU " + session.ecuId + " — Modül " + session.moduleNumber) : ""
 
-    // Emitted whenever the user picks "Veri Görüntüleme" in the mode
-    // combo - fired unconditionally on every such selection, not
-    // gated on whether the backend's mode value actually changed
-    // (mode defaults to DataView already, so a same-value reselect
-    // must still navigate to the chart screen).
     signal dataViewSelected()
-
-    // Same idea, for "Yazılım Yükleme" - fired unconditionally on
-    // every selection of that mode.
     signal firmwareUploadSelected()
-    signal parameterPageSelected()   // esra branch: parametre sayfasına git
+    signal parameterPageSelected()
 
-    radius: 10
-    color: "#1e2226"
+    radius: 12
+    color:  "#0d1829"
     border.width: 1
-    border.color: "#2c3238"
+    border.color: accentColor
 
-    Column {
+    // Hafif iç parıltı
+    Rectangle {
         anchors.fill: parent
-        anchors.margins: 16
-        spacing: 10
+        anchors.margins: 1
+        radius: parent.radius - 1
+        color: "transparent"
+        border.width: 1
+        border.color: Qt.rgba(
+            parseInt(root.accentColor.slice(1,3),16)/255,
+            parseInt(root.accentColor.slice(3,5),16)/255,
+            parseInt(root.accentColor.slice(5,7),16)/255,
+            0.18)
+    }
 
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 12
+        spacing: 8
+
+        // ── Başlık satırı ─────────────────────────────────────────────────────
         RowLayout {
-            width: parent.width
+            Layout.fillWidth: true
             spacing: 8
 
-            Text {
-                text: root.displayTitle
-                color: "#e8ebee"
-                font.pixelSize: 15
-                font.bold: true
+            // Renkli badge
+            Rectangle {
+                radius: 6
+                color: root.accentColor
+                implicitWidth:  badgeText.implicitWidth + 18
+                implicitHeight: 28
+                Text {
+                    id: badgeText
+                    anchors.centerIn: parent
+                    text: root.displayTitle
+                    color: "white"
+                    font.pixelSize: 13; font.bold: true
+                }
             }
 
-            // Fills whatever space is left, however wide the title/
-            // LED/button actually render at under the active style -
-            // no more guessing a fixed pixel gap.
             Item { Layout.fillWidth: true }
 
+            // LED göstergesi
             LedIndicator {
                 Layout.alignment: Qt.AlignVCenter
                 state: session ? session.ledState : "inactive"
             }
 
+            // Bağlan / Bağlantıyı Kes
             Button {
-                text: session && session.connected ? qsTr("Bağlantıyı Kes") : qsTr("Bağlan")
+                id: connectBtn
+                text: session && session.connected ? "Bağlantıyı Kes" : "Bağlan"
+                implicitHeight: 28
                 onClicked: {
                     if (!session) return
                     if (session.connected)
@@ -68,25 +79,57 @@ Rectangle {
                     else
                         Dispatcher.connectModule(session.ecuId, session.moduleNumber)
                 }
+                background: Rectangle {
+                    radius: 6
+                    color: connectBtn.pressed  ? Qt.darker (root.accentColor, 1.4)
+                         : connectBtn.hovered  ? Qt.lighter(root.accentColor, 1.25)
+                         : Qt.rgba(
+                               parseInt(root.accentColor.slice(1,3),16)/255,
+                               parseInt(root.accentColor.slice(3,5),16)/255,
+                               parseInt(root.accentColor.slice(5,7),16)/255, 0.25)
+                    border.color: root.accentColor; border.width: 1
+                    Behavior on color { ColorAnimation { duration: 120 } }
+                }
+                contentItem: Text {
+                    text: connectBtn.text; color: "white"
+                    font.pixelSize: 11; font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment:   Text.AlignVCenter
+                }
             }
         }
 
-        Rectangle { width: parent.width; height: 1; color: "#2c3238" }
+        // Ayırıcı çizgi
+        Rectangle {
+            Layout.fillWidth: true; height: 1
+            color: root.accentColor; opacity: 0.25
+        }
 
+        // ── Gövde ─────────────────────────────────────────────────────────────
         RowLayout {
-            width: parent.width
-            spacing: 16
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 10
 
+            // Sol: mod seçimi + gauge + durum
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                Layout.fillHeight: true
+                spacing: 6
 
+                // Mod seçici
                 RowLayout {
-                    spacing: 8
-                    Text { text: qsTr("Mod:"); color: "#9aa4ad"; Layout.alignment: Qt.AlignVCenter }
+                    Layout.fillWidth: true; spacing: 6
+                    Text {
+                        text: "Mod:"
+                        color: "#64748b"; font.pixelSize: 12
+                        Layout.alignment: Qt.AlignVCenter
+                    }
                     ComboBox {
-                        // esra branch: Parametre Kontrolü eklendi
-                        model: [qsTr("Veri Görüntüleme"), qsTr("Yazılım Yükleme"), qsTr("Parametre Kontrolü")]
+                        id: modeCombo
+                        Layout.fillWidth: true
+                        implicitHeight: 30
+                        model: ["Veri Görüntüleme", "Yazılım Yükleme", "Parametre Kontrolü"]
                         onActivated: {
                             if (!session) return
                             if (index === 0) {
@@ -99,64 +142,72 @@ Rectangle {
                                 root.parameterPageSelected()
                             }
                         }
+                        background: Rectangle {
+                            color: "#0f1a2e"; radius: 6
+                            border.color: "#334155"; border.width: 1
+                        }
+                        contentItem: Text {
+                            leftPadding: 8
+                            text: modeCombo.displayText
+                            color: "#cbd5e1"; font.pixelSize: 12
+                            verticalAlignment: Text.AlignVCenter
+                        }
                     }
                 }
 
+                // Seçilebilir metrik gauge
                 RpmGauge {
-                    // Placeholder value until live CAN FD/CCP
-                    // measurement data is wired in - structure is
-                    // ready, data source isn't yet.
-                    value: 0
-                }
-
-                Text {
-                    text: qsTr("Bağlantı: %1  |  Mod: %2  |  Güç: %3")
-                        .arg(session && session.connected ? qsTr("Bağlı") : qsTr("Bağlı değil"))
-                        .arg(session ? session.mode : "")
-                        .arg(session ? session.powerState : "")
-                    color: "#9aa4ad"
-                    font.pixelSize: 12
-                    wrapMode: Text.WordWrap
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    accentColor: root.accentColor
                 }
 
+                // Durum satırı
+                Text {
+                    text: "Bağlantı: %1  |  Güç: %2"
+                        .arg(session && session.connected ? "Bağlı ✓" : "Bağlı değil")
+                        .arg(session ? session.powerState : "—")
+                    color: "#475569"; font.pixelSize: 11
+                    Layout.fillWidth: true; wrapMode: Text.WordWrap
+                }
+
+                // Firmware etiketi
                 Text {
                     id: firmwareLabel
                     property string fileName: ""
-                    text: fileName.length > 0 ? qsTr("Firmware: %1").arg(fileName) : qsTr("Firmware: seçilmedi")
-                    color: "#9aa4ad"
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
+                    text: fileName.length > 0
+                          ? "Firmware: " + fileName
+                          : "Firmware: seçilmedi"
+                    color: "#475569"; font.pixelSize: 11
+                    Layout.fillWidth: true; elide: Text.ElideRight
 
                     function refresh() {
                         if (session)
                             fileName = Dispatcher.firmwareFileName(session.ecuId, session.moduleNumber)
                     }
-
                     Component.onCompleted: refresh()
-
                     Connections {
                         target: Dispatcher
                         function onFirmwareChanged(ecuId, moduleNumber) {
-                            if (session && ecuId === session.ecuId && moduleNumber === session.moduleNumber)
+                            if (session && ecuId === session.ecuId
+                                        && moduleNumber === session.moduleNumber)
                                 firmwareLabel.refresh()
                         }
                     }
                 }
             }
 
+            // Sağ: güç anahtarı
             ColumnLayout {
                 spacing: 4
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+
                 Text {
-                    text: qsTr("Güç")
-                    color: "#9aa4ad"
-                    font.pixelSize: 11
+                    text: "Güç"; color: "#64748b"; font.pixelSize: 11
                     Layout.alignment: Qt.AlignHCenter
                 }
                 PowerSwitchItem {
                     state: session ? session.powerState : "Off"
-                    // Qt 5.15: sinyal parametresi 'newState' adıyla
-                    // otomatik gelir, arrow function gerekmez
                     onRequestState: {
                         if (session)
                             Dispatcher.setPower(session.ecuId, session.moduleNumber, newState)

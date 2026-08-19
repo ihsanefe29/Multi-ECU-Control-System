@@ -25,7 +25,12 @@ SOURCES += \
     src/core/datasimulator.cpp \
     src/core/parametermodel.cpp \
     src/core/rawdataparser.cpp \
-    src/core/excelparser.cpp
+    src/core/excelparser.cpp \
+    src/core/packetbuilder.cpp \
+    src/core/datacollector.cpp \
+    src/core/idispatcher.cpp \
+    src/core/mockdispatcher.cpp \
+    src/core/RawDataReader.cpp
 
 HEADERS += \
     src/core/dispatcher.h \
@@ -41,6 +46,14 @@ HEADERS += \
     src/core/parametermodel.h \
     src/core/parameter.h \
     src/core/rawdataparser.h \
-    src/core/excelparser.h
+    src/core/excelparser.h \
+    src/core/packetbuilder.h \
+    src/core/datacollector.h \
+    src/core/idispatcher.h \
+    src/core/mockdispatcher.h \
+    src/core/RawDataReader.h \
+    src/core/enums/CommandType.h \
+    src/core/enums/ECUType.h \
+    src/core/enums/ModeType.h
 
 RESOURCES += qml.qrc

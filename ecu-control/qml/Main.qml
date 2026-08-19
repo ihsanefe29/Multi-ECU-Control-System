@@ -8,125 +8,262 @@ import "components"
 Window {
     id: window
     visible: true
-    width: 1100
-    height: 700
-    color: "#14171a"
+    minimumWidth: 800
+    minimumHeight: 560
+    width: 1280
+    height: 800
+    color: "#0f1623"
     title: qsTr("ECU Kontrol Arayüzü")
 
-    // "control" = the 4-module grid, "dataView" = the standalone
-    // signal chart screen, "firmwareUpload" = the (module-specific)
-    // firmware staging screen. Mode combo selections navigate here
-    // via EcuPanel's dataViewSelected/firmwareUploadSelected signals.
     property string activeScreen: "control"
     property string firmwareTargetEcuId: ""
     property int firmwareTargetModule: 0
+
+    // Her modülün aksent rengi
+    readonly property var accentColors: ["#3b82f6", "#a855f7", "#14b8a6", "#f97316"]
 
     function openFirmwareUpload(ecuId, moduleNumber) {
         window.firmwareTargetEcuId = ecuId
         window.firmwareTargetModule = moduleNumber
         window.activeScreen = "firmwareUpload"
     }
-
     function openParameters() {
         window.activeScreen = "parameters"
     }
 
+    // ── Kontrol Ekranı ────────────────────────────────────────────────────────
     Item {
+        id: controlScreen
         anchors.fill: parent
+        anchors.margins: 16
         visible: window.activeScreen === "control"
 
-        Column {
+        ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 16
             spacing: 12
 
-            // ── Başlık + Acil Kontroller (EceGulYuksel branch) ──────────────
-            Row {
-                width: parent.width
-                spacing: 12
+            // ── Header ────────────────────────────────────────────────────────
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
 
+                // Dikey mavi çizgi + başlık
+                Rectangle {
+                    width: 4; height: 34; radius: 2
+                    color: "#3b82f6"
+                }
                 Text {
-                    text: qsTr("ECU Kontrol Paneli")
-                    color: "#e8ebee"
-                    font.pixelSize: 20
+                    text: "ECU Kontrol Paneli"
+                    color: "#e2e8f0"
+                    font.pixelSize: Math.max(16, window.height * 0.028)
                     font.bold: true
-                    anchors.verticalCenter: parent.verticalCenter
+                    Layout.alignment: Qt.AlignVCenter
                 }
 
-                Item { width: parent.width - 420; height: 1 }
+                Item { Layout.fillWidth: true }
 
+                // Sıralı Başlat
                 Button {
-                    text: Dispatcher.startupInProgress
-                          ? qsTr("⏳ Başlatılıyor…")
-                          : qsTr("▶ Sıralı Başlat")
+                    id: startBtn
+                    text: Dispatcher.startupInProgress ? "⟳  Başlatılıyor..." : "▶  Sıralı Başlat"
                     enabled: !Dispatcher.startupInProgress && !Dispatcher.failSafeActive
+                    implicitWidth: 170; implicitHeight: 36
                     onClicked: Dispatcher.startupSequence()
+
+                    background: Rectangle {
+                        radius: 8
+                        color: parent.enabled
+                               ? (parent.pressed  ? "#15803d"
+                               :  parent.hovered  ? "#22c55e" : "#16a34a")
+                               : "#1e2d1e"
+                        Behavior on color { ColorAnimation { duration: 140 } }
+                    }
+                    contentItem: Text {
+                        text: parent.text; color: "white"
+                        font.pixelSize: 13; font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment:   Text.AlignVCenter
+                    }
                 }
 
+                // Acil Durdur
                 Button {
-                    text: Dispatcher.failSafeActive
-                          ? qsTr("⚠ FAİL-SAFE — Temizle")
-                          : qsTr("⛔ Acil Durdur")
-                    highlighted: true
-                    palette.button: Dispatcher.failSafeActive ? "#dc2626" : "#b91c1c"
+                    id: emergencyBtn
+                    text: Dispatcher.failSafeActive ? "✕  Fail-Safe Temizle" : "⛔  Acil Durdur"
+                    implicitWidth: 185; implicitHeight: 36
                     onClicked: {
-                        if (Dispatcher.failSafeActive)
-                            Dispatcher.clearFailSafe()
-                        else
-                            Dispatcher.emergencyStop()
+                        if (Dispatcher.failSafeActive) Dispatcher.clearFailSafe()
+                        else Dispatcher.emergencyStop()
+                    }
+                    background: Rectangle {
+                        radius: 8
+                        color: parent.pressed ? "#7f1d1d"
+                             : parent.hovered ? "#ef4444" : "#dc2626"
+                        Behavior on color { ColorAnimation { duration: 140 } }
+                    }
+                    contentItem: Text {
+                        text: parent.text; color: "white"
+                        font.pixelSize: 13; font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment:   Text.AlignVCenter
                     }
                 }
             }
 
-            GridLayout {
-                width: parent.width
-                height: parent.height - 40
-                columns: 2
-                rowSpacing: 16
-                columnSpacing: 16
+            // ── Gövde: 2×2 grid + log paneli ─────────────────────────────────
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 12
 
-                EcuPanel {
+                // 2×2 ECU kartları
+                GridLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    session: Dispatcher.ecuAModule1
-                    onDataViewSelected: window.activeScreen = "dataView"
-                    onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
-                    onParameterPageSelected: window.openParameters()
+                    columns: 2
+                    rowSpacing: 12
+                    columnSpacing: 12
+
+                    EcuPanel {
+                        Layout.fillWidth: true; Layout.fillHeight: true
+                        session: Dispatcher.ecuAModule1
+                        accentColor: window.accentColors[0]
+                        onDataViewSelected:       window.activeScreen = "dataView"
+                        onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
+                        onParameterPageSelected:  window.openParameters()
+                    }
+                    EcuPanel {
+                        Layout.fillWidth: true; Layout.fillHeight: true
+                        session: Dispatcher.ecuAModule2
+                        accentColor: window.accentColors[1]
+                        onDataViewSelected:       window.activeScreen = "dataView"
+                        onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
+                        onParameterPageSelected:  window.openParameters()
+                    }
+                    EcuPanel {
+                        Layout.fillWidth: true; Layout.fillHeight: true
+                        session: Dispatcher.ecuBModule1
+                        accentColor: window.accentColors[2]
+                        onDataViewSelected:       window.activeScreen = "dataView"
+                        onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
+                        onParameterPageSelected:  window.openParameters()
+                    }
+                    EcuPanel {
+                        Layout.fillWidth: true; Layout.fillHeight: true
+                        session: Dispatcher.ecuBModule2
+                        accentColor: window.accentColors[3]
+                        onDataViewSelected:       window.activeScreen = "dataView"
+                        onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
+                        onParameterPageSelected:  window.openParameters()
+                    }
                 }
-                EcuPanel {
-                    Layout.fillWidth: true
+
+                // ── Log Paneli ────────────────────────────────────────────────
+                Rectangle {
+                    Layout.preferredWidth: Math.max(200, window.width * 0.21)
                     Layout.fillHeight: true
-                    session: Dispatcher.ecuAModule2
-                    onDataViewSelected: window.activeScreen = "dataView"
-                    onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
-                    onParameterPageSelected: window.openParameters()
-                }
-                EcuPanel {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    session: Dispatcher.ecuBModule1
-                    onDataViewSelected: window.activeScreen = "dataView"
-                    onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
-                    onParameterPageSelected: window.openParameters()
-                }
-                EcuPanel {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    session: Dispatcher.ecuBModule2
-                    onDataViewSelected: window.activeScreen = "dataView"
-                    onFirmwareUploadSelected: window.openFirmwareUpload(session.ecuId, session.moduleNumber)
-                    onParameterPageSelected: window.openParameters()
+                    color: "#0a1628"
+                    radius: 12
+                    border.color: "#1e3a5f"
+                    border.width: 1
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 8
+
+                        // Log başlığı
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+                            Rectangle { width: 4; height: 18; radius: 2; color: "#3b82f6" }
+                            Text {
+                                text: "Olay Akışı"
+                                color: "#e2e8f0"
+                                font.pixelSize: 14; font.bold: true
+                            }
+                            Item { Layout.fillWidth: true }
+                            Text {
+                                text: Dispatcher.logMessages.length + " kayıt"
+                                color: "#475569"; font.pixelSize: 10
+                            }
+                        }
+
+                        Rectangle { Layout.fillWidth: true; height: 1; color: "#1e3a5f" }
+
+                        ListView {
+                            id: logView
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            clip: true
+                            model: Dispatcher.logMessages
+                            spacing: 1
+
+                            delegate: Rectangle {
+                                width: logView.width
+                                height: logText.implicitHeight + 6
+                                color: index % 2 === 0 ? "transparent" : "#ffffff05"
+                                radius: 3
+
+                                Text {
+                                    id: logText
+                                    anchors {
+                                        left: parent.left; right: parent.right
+                                        leftMargin: 4; rightMargin: 4
+                                        verticalCenter: parent.verticalCenter
+                                    }
+                                    text: modelData
+                                    color: modelData.indexOf("[KRİTİK]") === 0 ? "#f87171"
+                                         : modelData.indexOf("[HATA]")   === 0 ? "#fca5a5"
+                                         : modelData.indexOf("[UYARI]")  === 0 ? "#fbbf24"
+                                         : modelData.indexOf("[BİLGİ]")  === 0 ? "#4ade80"
+                                         :                                        "#94a3b8"
+                                    font.pixelSize: 10
+                                    font.family: "Courier New"
+                                    wrapMode: Text.Wrap
+                                }
+                            }
+                            onCountChanged: positionViewAtEnd()
+                        }
+                    }
                 }
             }
         }
     }
 
+    // ── Fail-Safe Uyarı Bandı ────────────────────────────────────────────────
+    Rectangle {
+        visible: Dispatcher.failSafeActive
+        anchors { top: parent.top; left: parent.left; right: parent.right }
+        height: 44
+        color: "#7f1d1d"
+        z: 100
+
+        Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+            border.color: "#ef4444"; border.width: 2
+        }
+
+        Row {
+            anchors.centerIn: parent
+            spacing: 12
+            Text { text: "⚠";  color: "#fca5a5"; font.pixelSize: 20; anchors.verticalCenter: parent.verticalCenter }
+            Text {
+                text: "SİSTEM FAIL-SAFE MODUNDA  —  TÜM MODÜLLER DURDURULDU"
+                color: "white"; font.pixelSize: 14; font.bold: true; font.letterSpacing: 1.2
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text { text: "⚠"; color: "#fca5a5"; font.pixelSize: 20; anchors.verticalCenter: parent.verticalCenter }
+        }
+    }
+
+    // ── Diğer Ekranlar ────────────────────────────────────────────────────────
     SignalChartScreen {
         anchors.fill: parent
         visible: window.activeScreen === "dataView"
         onBackRequested: window.activeScreen = "control"
     }
-
     FirmwareUploadScreen {
         anchors.fill: parent
         visible: window.activeScreen === "firmwareUpload"
@@ -134,83 +271,9 @@ Window {
         moduleNumber: window.firmwareTargetModule
         onBackRequested: window.activeScreen = "control"
     }
-
-    // Parametre kontrol ekranı (esra_parameter-page branch)
     ParameterPage {
         anchors.fill: parent
         visible: window.activeScreen === "parameters"
         onBackRequested: window.activeScreen = "control"
-    }
-    // ── Fail-Safe kırmızı uyarı bandı (EceGulYuksel branch) ───────────────
-    Rectangle {
-        visible: Dispatcher.failSafeActive
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 44
-        color: "#dc2626"
-        z: 100
-
-        Text {
-            anchors.centerIn: parent
-            text: qsTr("⚠  SİSTEM FAIL-SAFE MODUNDA — TÜM MODÜLLER DURDURULDU  ⚠")
-            color: "white"
-            font.pixelSize: 15
-            font.bold: true
-        }
-    }
-
-    // ── Olay Akışı (Log) paneli — sadece kontrol ekranında görünür ─────────
-    Rectangle {
-        visible: window.activeScreen === "control"
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.top: parent.top
-        anchors.topMargin: 16
-        anchors.rightMargin: 16
-        anchors.bottomMargin: 16
-        width: 260
-        color: "#141F3D"
-        radius: 8
-
-        Column {
-            anchors.fill: parent
-            anchors.margins: 10
-            spacing: 8
-
-            Text {
-                text: qsTr("Olay Akışı")
-                color: "white"
-                font.pixelSize: 14
-                font.bold: true
-            }
-
-            Rectangle { width: parent.width; height: 1; color: "#3A4A7A" }
-
-            ListView {
-                id: logView
-                width: parent.width
-                height: parent.height - 40
-                clip: true
-                model: Dispatcher.logMessages
-                spacing: 3
-
-                delegate: Text {
-                    width: logView.width
-                    text: modelData
-                    color: modelData.indexOf("[KRİTİK]") === 0 ? "#dc2626"
-                         : modelData.indexOf("[HATA]")   === 0 ? "#ef4444"
-                         : modelData.indexOf("[UYARI]")  === 0 ? "#f59e0b"
-                         : modelData.indexOf("[BİLGİ]")  === 0 ? "#2fbf71"
-                         :                                        "#b8c4e0"
-                    font.pixelSize: 11
-                    font.family: "Courier New"
-                    font.bold: modelData.indexOf("[KRİTİK]") === 0
-                    wrapMode: Text.Wrap
-                }
-
-                onCountChanged: positionViewAtEnd()
-            }
-        }
     }
 }

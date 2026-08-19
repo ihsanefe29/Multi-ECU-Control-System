@@ -1,32 +1,59 @@
+// LedIndicator.qml — Durum LED'i
+// state: "active" | "inactive" | "warning" | "error"
 import QtQuick 2.15
 
-// Simple status LED. state drives the color:
-//   "inactive" -> gray, "success" -> green, "fail" -> red,
-//   "pending"  -> blue (waiting/in-progress)
-//
-// This is the generic single-boolean-friendly LED discussed in
-// requirements: if a caller only has a plain bool, they should map
-// it to "success"/"fail" themselves (true isn't assumed to mean
-// success by default - that mapping is caller-specific).
-Rectangle {
+Item {
     id: root
-    property string state: "inactive" // inactive | pending | success | fail
-    property string pendingColor: "#2f80e6" // swap to orange (#e6a23c) if preferred per-instance
+    implicitWidth: 14
+    implicitHeight: 14
 
-    width: 16
-    height: 16
-    radius: width / 2
-    border.width: 1
-    border.color: "#00000055"
+    property string state: "inactive"
 
-    color: {
-        switch (state) {
-        case "success": return "#2fbf71"
-        case "fail":    return "#e6483a"
-        case "pending": return pendingColor
-        default:        return "#5a626b" // inactive
+    readonly property color _core: state === "active"   ? "#22c55e"
+                                 : state === "warning"  ? "#f59e0b"
+                                 : state === "error"    ? "#ef4444"
+                                 :                        "#334155"
+
+    readonly property color _glow: state === "active"   ? "#16a34a"
+                                 : state === "warning"  ? "#d97706"
+                                 : state === "error"    ? "#b91c1c"
+                                 :                        "transparent"
+
+    // Dış parıltı halkası
+    Rectangle {
+        anchors.centerIn: parent
+        width: parent.width * 1.9
+        height: width
+        radius: width / 2
+        color: "transparent"
+        border.color: root._glow
+        border.width: 1
+        opacity: state !== "inactive" ? 0.5 : 0
+
+        SequentialAnimation on opacity {
+            running: root.state === "active"
+            loops: Animation.Infinite
+            NumberAnimation { to: 0.6; duration: 900; easing.type: Easing.InOutSine }
+            NumberAnimation { to: 0.1; duration: 900; easing.type: Easing.InOutSine }
         }
     }
 
-    Behavior on color { ColorAnimation { duration: 150 } }
+    // Ana LED dairesi
+    Rectangle {
+        anchors.centerIn: parent
+        width: parent.width
+        height: parent.height
+        radius: width / 2
+        color: root._core
+
+        // İç beyaz parıltı
+        Rectangle {
+            anchors { top: parent.top; topMargin: parent.height * 0.12; horizontalCenter: parent.horizontalCenter }
+            width: parent.width * 0.4
+            height: parent.height * 0.25
+            radius: width / 2
+            color: "white"
+            opacity: root.state !== "inactive" ? 0.45 : 0.1
+        }
+    }
 }

@@ -423,3 +423,4 @@ tests/results/
 #
 # These are source/configuration files and belong in Git.
 # ============================================================
+ecu-control/build_qt515/
